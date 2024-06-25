@@ -142,8 +142,7 @@ def start():
     start_time_bfs = time.time()
     stack = [start]
     visited = [start]
-    predecesor = [[[arr[x + y * (width//grid_size)]] for x in range(width//grid_size)] for y in range(height//grid_size)]
-    predecesor[start.y][start.x] = [start]
+    start.path = [start]
     while True:
         counter_bfs += 1
         if render:
@@ -156,37 +155,50 @@ def start():
         curr = stack.pop(0)
         
         if curr == end:
-            path = predecesor[end.y][end.x]
             break
+        
+        
         visited.append(curr)
         if render:
-            pygame.draw.rect(screen,"blue", (curr.x*grid_size+2,curr.y*grid_size+2,grid_size-4,grid_size-4) )
-        if check_cell_solve(curr.x+1 ,curr.y) and not curr.walls["E"] and check_cell_solve(curr.x+1,curr.y) not in visited:
-            stack.append(check_cell_solve(curr.x+1,curr.y))
-            if  predecesor[curr.y][curr.x+1]== [check_cell_solve(curr.x+1,curr.y)]:
-                for val in predecesor[curr.y][curr.x]:
-                    predecesor[curr.y][curr.x+1].append(val)
-        if check_cell_solve(curr.x-1 ,curr.y) and not curr.walls["W"] and check_cell_solve(curr.x-1,curr.y) not in visited:
-            stack.append(check_cell_solve(curr.x-1,curr.y))
-            if predecesor[curr.y][curr.x-1] == [check_cell_solve(curr.x-1,curr.y)]:
-                for val in predecesor[curr.y][curr.x]:
-                    predecesor[curr.y][curr.x-1].append(val)
-        if check_cell_solve(curr.x ,curr.y-1) and not curr.walls["N"] and check_cell_solve(curr.x,curr.y-1) not in visited:
-            stack.append(check_cell_solve(curr.x,curr.y-1))
-            if  predecesor[curr.y-1][curr.x]== [check_cell_solve(curr.x,curr.y-1)]:
-                for val in predecesor[curr.y][curr.x]:
-                    predecesor[curr.y-1][curr.x].append(val)
-        if check_cell_solve(curr.x ,curr.y+1) and not curr.walls["S"] and check_cell_solve(curr.x,curr.y+1) not in visited:
-            stack.append(check_cell_solve(curr.x,curr.y+1))
-            if  predecesor[curr.y+1][curr.x] == [check_cell_solve(curr.x,curr.y+1)]:
-                for val in predecesor[curr.y][curr.x]:
-                    predecesor[curr.y+1][curr.x].append(val)
+            for i in range(1,len(curr.path)):
+                pygame.draw.line(screen,"lightblue",(curr.path[i-1].x*grid_size+grid_size//2,curr.path[i-1].y*grid_size+grid_size//2),(curr.path[i].x*grid_size+grid_size//2,curr.path[i].y*grid_size+grid_size//2),10)
+                pygame.draw.circle(screen,"lightblue",(curr.path[i-1].x*grid_size+grid_size//2,curr.path[i-1].y*grid_size+grid_size//2),3)
+        3
+        next = check_cell_solve(curr.x+1,curr.y)
+        if next and not curr.walls["E"] and next not in visited:
+            if next.path == []:
+                next.path.append(next)
+                for val in curr.path:
+                    next.path.append(val)
+            stack.append(next)
+                    
+            
+        next = check_cell_solve(curr.x-1,curr.y)
+        if next and not curr.walls["W"] and next not in visited:
+            if next.path == []:
+                next.path.append(next)
+                for val in curr.path:
+                    next.path.append(val)
+            stack.append(next)
+        next = check_cell_solve(curr.x,curr.y-1)
+        if next and not curr.walls["N"] and next not in visited:
+            if next.path == []:
+                next.path.append(next)
+                for val in curr.path:
+                    next.path.append(val)
+            stack.append(next)
+        next = check_cell_solve(curr.x,curr.y+1)
+        if next and not curr.walls["S"] and next not in visited:
+            if next.path == []:
+                next.path.append(next)
+                for val in curr.path:
+                    next.path.append(val)
+            stack.append(next)
         if render:
             pygame.display.update()
         
         
         
-    path = predecesor[end.y][end.x]
     if render:
         screen.fill("black")
         [cell.draw() for cell in arr]
@@ -195,14 +207,19 @@ def start():
         print("Time required for BFS: ", round(end_time_bfs-start_time_bfs,3)," seconds")
         print("BFS iterations: ", counter_bfs)
     if render:
-        for i in range(1,len(path)):
-                pygame.draw.line(screen,"blue",(path[i-1].x*grid_size+grid_size//2,path[i-1].y*grid_size+grid_size//2),(path[i].x*grid_size+grid_size//2,path[i].y*grid_size+grid_size//2),10)
-                pygame.draw.circle(screen,"blue",(path[i-1].x*grid_size+grid_size//2,path[i-1].y*grid_size+grid_size//2),3)
+        for i in range(1,len(end.path)):
+                pygame.draw.line(screen,"lightblue",(curr.path[i-1].x*grid_size+grid_size//2,curr.path[i-1].y*grid_size+grid_size//2),(curr.path[i].x*grid_size+grid_size//2,curr.path[i].y*grid_size+grid_size//2),10)
+                pygame.draw.circle(screen,"lightblue",(curr.path[i-1].x*grid_size+grid_size//2,curr.path[i-1].y*grid_size+grid_size//2),3)
         pygame.draw.rect(screen,"green", (start.x*grid_size+2,start.y*grid_size+2,grid_size-4,grid_size-4))
         pygame.draw.rect(screen,"red", (end.x*grid_size+2,end.y*grid_size+2,grid_size-4,grid_size-4))
         pygame.display.update()
+        time.sleep(1)
 
-
+    
+    #clean up paths to avoid copying results
+    for i in range((width//grid_size)*(height//grid_size)):
+        arr[i].path = []
+    
     #A-star
     #screen reset
     if render:
@@ -228,7 +245,7 @@ def start():
         pygame.draw.rect(screen,"green", (start.x*grid_size+2,start.y*grid_size+2,grid_size-4,grid_size-4))
     new_node = start
     vecinos_heap = []
-    heapq.heappush(vecinos_heap, (f(h(start.x, start.y), 0), 0, (start.x, start.y), start))
+    heapq.heappush(vecinos_heap, (f(h(start.x, start.y), 0), 0, (start.x, start.y), start,start))
 
     while True:
         counter_astar += 1
@@ -245,23 +262,20 @@ def start():
                     if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                         came_from[neighbor] = new_node
                         g_score[neighbor] = tentative_g_score
-                        heapq.heappush(vecinos_heap, (f(h(x + dx, y + dy), tentative_g_score), tentative_g_score, (x + dx, y + dy), neighbor))
-                    if render:
-                        pygame.draw.rect(screen, "lightblue", (neighbor.x * grid_size + 2, neighbor.y * grid_size + 2, grid_size - 4, grid_size - 4))
+                        heapq.heappush(vecinos_heap, (f(h(x + dx, y + dy), tentative_g_score), tentative_g_score, (x + dx, y + dy), neighbor,new_node))
 
-        temp = new_node
         # Extraer el vecino con el menor f-score
-        _, new_depth, _, new_node = heapq.heappop(vecinos_heap)
+        _, new_depth, _, new_node,previous = heapq.heappop(vecinos_heap)
         new_node.path.append(new_node)
-        if  new_node.path == []:
-            for camino in temp.path:
-                if camino not in new_node.path:
-                    new_node.path.append(camino)
-            
+        if new_node.path == [new_node]:
+            for camino in previous.path:
+                new_node.path.append(camino)
         if new_node == end:
             break
         if render:
-            pygame.draw.rect(screen, "lightblue", (new_node.x * grid_size + 2, new_node.y * grid_size + 2, grid_size - 4, grid_size - 4))
+            for i in range(1,len(new_node.path)):
+                pygame.draw.line(screen,"blue",(new_node.path[i-1].x*grid_size+grid_size//2,new_node.path[i-1].y*grid_size+grid_size//2),(new_node.path[i].x*grid_size+grid_size//2,new_node.path[i].y*grid_size+grid_size//2),10)
+                pygame.draw.circle(screen,"blue",(new_node.path[i-1].x*grid_size+grid_size//2,new_node.path[i-1].y*grid_size+grid_size//2),3)
 
         visited_depth.add((new_node, new_depth))
         visited.add(new_node)
@@ -287,6 +301,7 @@ def start():
         pygame.draw.rect(screen,"green", (start.x*grid_size+2,start.y*grid_size+2,grid_size-4,grid_size-4))
         pygame.draw.rect(screen,"red", (end.x*grid_size+2,end.y*grid_size+2,grid_size-4,grid_size-4))
         pygame.display.update()
+        time.sleep(1)
     return counter_bfs,counter_astar, end_time_bfs-start_time_bfs,astart_end-astar_start,maze_end-maze_start
 
 
@@ -298,12 +313,13 @@ if stats:
     bfs_iterations = []
     astar_iterations = []
     maze_times = []
-    fig, axs = plt.subplots(2)
+    fig, axs = plt.subplots(3)
     fig.suptitle("Statistics of maze building and solving algorithm")
     graph1, = axs[0].plot(x_axis,bfs_times,color = 'g',label = "BFS time")
     graph2, = axs[0].plot(x_axis,astar_times,color = 'r',label = "A* time")
     graph3, = axs[1].plot(x_axis,bfs_iterations,color = 'g',label = "BFS squares checked")
     graph4, = axs[1].plot(x_axis,astar_iterations,color = 'r',label = "A* squares checked")
+    graph5, = axs[2].plot(x_axis,maze_times,color = 'r')
     axs[0].legend()
     axs[1].legend()
     def update(frame):
@@ -313,6 +329,7 @@ if stats:
         astar_times.append(astar_time)
         bfs_iterations.append(bfs_c)
         astar_iterations.append(astar_c)
+        maze_times.append(maze_time)
         graph1.set_xdata(x_axis)
         graph1.set_ydata(bfs_times)
         graph2.set_xdata(x_axis)
@@ -321,10 +338,14 @@ if stats:
         graph3.set_ydata(bfs_iterations)
         graph4.set_xdata(x_axis)
         graph4.set_ydata(astar_iterations)
+        graph5.set_xdata(x_axis)
+        graph5.set_ydata(maze_times)
         axs[0].relim()
         axs[0].autoscale_view()
         axs[1].relim()
         axs[1].autoscale_view()
+        axs[2].relim()
+        axs[2].autoscale_view()
         
 
     anim = FuncAnimation(fig, update, frames=range(iterations), repeat=False)
@@ -333,6 +354,3 @@ if stats:
 else:
     for i in range(iterations):
         start()     
-
-
-    
