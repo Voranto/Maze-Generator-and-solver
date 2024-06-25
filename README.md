@@ -4,7 +4,7 @@ Algorithm to build mazes using the randomized DFS, and a solving using both dijk
 # USE
 Latest Python version required: https://www.python.org/downloads/
 
-How to install libraries required
+How to install libraries required in windows (open Command prompt and type these commands)
 ```
 pip install pygame
 pip install matplotlib
